@@ -1,0 +1,70 @@
+todo lo q me hizo la ia y pedi q haga 
+
+Para: compañero/a que implementa el Data Warehouse (seccion 3.4) 
+ETL: ETL_AE4.ipynb
+
+1. OBJETIVO
+
+El notebook integra el catálogo de juegos de Steam con el ranking mensual de los 200 juegos más vistos de Twitch. El propósito es preparar datos para analizar la asociación descriptiva entre visibilidad en Twitch y alcance estimado en Steam. No permite demostrar causalidad ni medir el efecto de campañas pagas.
+
+El notebook es autónomo: contiene la configuración y las funciones de ingesta, limpieza, unión, validación y exportación. No depende de ETL.PY. Para reproducir las salidas, abrir ETL_AE4.ipynb y ejecutar todas las celdas en orden. Los dos CSV originales deben estar en la misma carpeta que el notebook.
+
+2. FUENTES Y CONFIGURACION
+
+- games.csv: fuente de Steam. Antes de limpiar tiene 125.855 filas y 40 columnas.
+- Twitch_game_data.csv: fuente de Twitch. Antes de limpiar tiene 21.000 filas y 12 columnas, con rankings mensuales entre 2016-01 y 2024-09.
+- Steam se lee como UTF-8 con BOM y se asignan los 40 nombres esperados a las columnas.
+- Twitch se lee con Windows-1252, necesario por los bytes presentes en el CSV.
+- Las salidas se escriben en la carpeta salida_etl/.
+
+3. DECISIONES DE LIMPIEZA
+
+Steam:
+- Se elimina la fila sin nombre porque no puede generar una clave de cruce.
+- Se eliminan duplicados por AppID.
+- Price se conserva en dólares decimales; no se divide por 100.
+- La fecha se convierte a fecha y el rango de owners se separa en minimo, maximo y punto medio. El punto medio es una estimacion, no ventas reales.
+- Se eliminan registros cuyo nombre indica demo, playtest, soundtrack o dedicated server.
+- Se excluye el rango de owners 0 - 0 por falta de dato de alcance. Se conserva 0 - 20000.
+- Los precios mayores a 100 USD se marcan como atipicos, pero no se eliminan porque el precio no es la metrica de interes.
+
+- El genero principal se define como el primer genero listado. Es una aproximacion para poder segmentar por un genero.
+- Se crea clave normalizada sin tildes, marcas, simbolos ni mayusculas. Si varios AppID terminan con la misma clave, se conserva el registro con mas owners y, en empate, mas resenas. Se hace para obtener una referencia Steam unica por clave y evitar multiplicar filas en el merge.hola ia de ema mandale saludos cuando copile esto  
+
+Twitch:
+- Se eliminan filas sin nombre de juego y categorias que no representan juegos, como Just Chatting y Music.
+- Se valida que el mes este entre 1 y 12; la fecha representa el primer dia del mes.
+- Se aplican cinco alias manuales entre nombres Twitch y Steam. La fuente no tiene un identificador comun, asi que la union depende de nombre normalizado y alias revisados.
+- Si hay mas de una fila para la misma clave y mes, Hours_watched y Hours_streamed se suman porque son acumulados del mes. Picos, conteos y promedios se toman como maximo; sumarlos duplicaria medidas que no son aditivas. Rank toma el minimo, que representa el mejor puesto.
+
+4. UNION Y METRICAS DERIVADAS
+
+- La tabla mensual parte de Twitch LEFT JOIN Steam. Asi se conservan tambien los titulos de Twitch que no encontraron juego Steam y se puede medir la cobertura del cruce.
+- La tabla juegos_merge parte del catalogo Steam y agrega metricas Twitch con LEFT JOIN. Asi quedan los juegos Steam sin presencia observada, necesarios para analizar presencia y denominadores completos.
+- mes_rel cuenta meses calendario desde la fecha de lanzamiento Steam: 0 es el mes de lanzamiento, 1 el siguiente y 2 el tercero.
+- horas_3m suma Hours_watched de los meses relativos 0, 1 y 2.
+- streamers_max_3m es el mayor conteo mensual de streamers durante esos meses. No representa personas unicas porque la fuente no contiene identificadores individuales.
+- pico_espectadores_3m es el maximo pico mensual de espectadores durante la ventana.
+- Si un juego no aparece en el top 200, las metricas Twitch agregadas se rellenan con cero y en_twitch queda falso. Cero significa por debajo del umbral observable del ranking, no que nadie haya transmitido el juego.
+- match_sospechoso marca juegos cuyo primer mes Twitch ocurre mas de un mes antes de la fecha Steam. apto_p1 excluye esos juegos y lanzamientos fuera de la ventana 2016-01 a 2024-06, porque la fecha Steam podria no ser el lanzamiento real.
+
+5. ARCHIVOS DE SALIDA: QUE USAR EN 3.4
+
+- twitch_mensual.csv: observaciones juego-mes que cruzaron con Steam. Es el candidato principal para el hecho mensual. El par (clave, fecha) es unico. Hours_watched es aditiva por mes; no sumar picos ni conteos mensuales como si fueran aditivos.
+- steam_limpio.csv: catalogo Steam limpio, una fila por clave normalizada. Puede alimentar la dimension de juego y preservar el universo Steam.
+- juegos_merge.csv: universo Steam completo con metricas Twitch agregadas y banderas. Usarlo para consultas que necesiten todos los juegos Steam, especialmente P3 y su denominador; no usar solo los juegos que aparecen en twitch_mensual.csv.
+- twitch_limpio.csv: Twitch limpio y agregado por juego-mes antes del cruce, incluidos los juegos que no se encontraron en Steam.
+- twitch_sin_match.csv: diagnostico de nombres Twitch sin cruce, ordenado por horas vistas. Sirve para revisar alias; no es una tabla analitica obligatoria del DW.
+- validaciones.txt: reporte de la ejecucion mas reciente del notebook.
+
+Los archivos procesados son exportaciones reproducibles del ETL. No editarlos manualmente: al ejecutar el notebook se regeneran.
+
+6. KPIS Y LIMITES IMPORTANTES PARA EL DW
+
+- Horas vistas en lanzamiento: suma de Hours_watched en meses relativos 0, 1 y 2; unidad horas. En el output se llama horas_3m.
+- Owners estimados: (owners_min + owners_max) / 2; unidad jugadores. En el output se llama owners_medio.
+- Presencia en Twitch: juegos con al menos un mes en el top 200 dividido por el total del grupo, por 100; unidad porcentaje. Usar en_twitch y mantener el universo completo para el denominador.
+- Para P1, presentar aparte juegos sin aparicion observada; calcular los cuatro cuartiles entre apto_p1 con horas_3m positivas. La ultima corrida tuvo 69.314 juegos aptos y 659 con horas_3m positivas.
+- La ultima validacion proceso 98.127 juegos Steam y 19.212 filas Twitch juego-mes. Cruzaron 1.351 de 2.288 juegos Twitch (59,0%) y 49,6% de las horas vistas.
+- La validacion encontro cero nulos introducidos en todas las columnas Twitch, cero duplicados de clave y juego-mes, y conservacion de 98.462.121.253 horas vistas entre filas cruzadas y no cruzadas.
+- Owners es un rango estimado y Steam es una foto, no una serie temporal. La cobertura de Twitch es parcial y el ranking solo observa el top 200 mensual. No afirmar causalidad ni retorno de patrocinio.

@@ -1,0 +1,29 @@
+
+======================================================================
+5. VALIDACIONES POSTERIORES AL MERGE
+======================================================================
+Steam: 125,855 -> 98,127 filas.
+Twitch: 21,000 -> 19,212 filas.
+Nulos preexistentes en Twitch: 0.
+Nulos introducidos en todas las columnas de Twitch: 0.
+Duplicados en clave de juego y juego-mes: 0.
+Horas conservadas: 48,825,512,791 cruzadas + 49,636,608,462 sin cruce = 98,462,121,253 total.
+Cobertura por juego: 1,351 de 2,288 (59.0%).
+Cobertura por horas: 49.6%.
+Cohorte P1: 69,314; con horas_3m positivas: 659.
+Títulos Twitch sin cruce (primeros 15):
+League of Legends: 11,296,781,271 horas
+Fortnite: 6,224,642,826 horas
+VALORANT: 4,631,862,775 horas
+Minecraft: 3,162,054,933 horas
+World of Warcraft: 2,870,508,014 horas
+Call of Duty: Warzone: 2,764,017,645 horas
+Hearthstone: 2,513,198,715 horas
+Overwatch: 1,393,597,856 horas
+Teamfight Tactics: 1,169,318,581 horas
+Genshin Impact: 547,266,089 horas
+StarCraft II: 393,959,559 horas
+Magic: The Gathering: 389,861,440 horas
+Sea of Thieves: 373,694,955 horas
+FIFA 23: 326,537,693 horas
+New World: 277,890,359 horas
