@@ -4,7 +4,7 @@ Carrera: Ingeniería en Sistemas de Información
 Materia: Gestión Avanzada de Bases de Datos
 Profesores: Gabriel del Rosario, Portel Marcos, Fernández Victoria
 Fecha de entrega: 16/11/2026
-Modalidad: grupal, 2 o 3 integrantes
+Modalidad: grupal, 2 o 3 integrantes ema no cuenta como persona 
 Plazo de desarrollo: 2 semanas
  Contexto
 El caso analiza una empresa desarrolladora o publicadora de videojuegos que evalúa cómo orientar sus esfuerzos de visibilidad en Twitch al lanzar juegos en Steam.
