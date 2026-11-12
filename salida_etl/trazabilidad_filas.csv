@@ -1,0 +1,9 @@
+﻿fuente,paso,filas_antes,filas_despues,eliminadas
+Steam,Eliminar filas sin nombre,125855,125854,1
+Steam,Eliminar AppID duplicados,125854,125854,0
+Steam,Excluir owners '0 - 0',125854,101276,24578
+Steam,Excluir demos/playtests/soundtracks/servidores,101276,101227,49
+Steam,Resolver nombres repetidos (1 AppID por clave),101227,99596,1631
+Twitch,Eliminar filas sin nombre de juego,21000,20999,1
+Twitch,Excluir categorías que no son juegos,20999,19109,1890
+Twitch,Consolidar duplicados juego-mes,19109,19097,12

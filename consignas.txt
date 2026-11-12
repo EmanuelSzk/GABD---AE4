@@ -47,9 +47,9 @@ Este apartado es la base de todo el trabajo y de la defensa oral: el dashboard d
 •	KPI 2, owners estimados = (owners mínimo + owners máximo) ÷ 2 del rango publicado por Steam. Unidad: jugadores.
 •	KPI 3, presencia en Twitch = (juegos con al menos un mes en el top 200 ÷ total de juegos del grupo analizado) × 100. Unidad: porcentaje.
 4. Criterios y supuestos
-•	Cohorte: lanzamientos entre enero de 2016 y junio de 2024; para P1 se excluyen cruces sospechosos donde Twitch antecede por más de un mes a la fecha de Steam.
+•	Cohorte: lanzamientos entre enero de 2016 y junio de 2024; para P1 se excluyen cruces sospechosos: juegos que acumularon en Twitch más horas antes de su fecha de Steam que en sus tres primeros meses, porque esa fecha no es su lanzamiento real (salida previa en otra tienda o consola, o acceso anticipado).
 •	Owners: se usa el punto medio del rango, se excluye “0 - 0” y “0 - 20000” se conserva como baja señal.
-•	Visibilidad y unión: se unen nombres normalizados con cinco alias manuales; se excluyen categorías que no son juegos. La falta de aparición en el top 200 se interpreta como visibilidad bajo el umbral observado; en P1 se informa aparte y los cuartiles se calculan solo entre horas positivas.
+•	Visibilidad y unión: se unen nombres normalizados con 21 alias manuales (solo renombres del mismo producto de PC); se excluyen categorías que no son juegos. La falta de aparición en el top 200 se interpreta como visibilidad bajo el umbral observado; en P1 se informa aparte y los cuartiles se calculan solo entre horas positivas.
 5. Alcance y limitaciones
 •	No se puede demostrar causalidad. Los juegos que ya venden bien se streamean más, y los datos no separan “Twitch vende” de “lo que vende se ve en Twitch”.
 •	No se puede medir el efecto del patrocinio. Ninguna fuente indica qué streams fueron pagos ni cuánto se invirtió, así que no se puede calcular retorno por dólar.
@@ -57,7 +57,9 @@ Este apartado es la base de todo el trabajo y de la defensa oral: el dashboard d
 •	Steam es una foto, no una serie mensual. No se puede ver cómo cambian las ventas antes y después de una campaña.
 •	Twitch solo trae el top 200 mensual. Los juegos poco vistos no aparecen, lo que sesga la muestra hacia juegos exitosos.
 •	La fuente de Twitch informa un conteo mensual de streamers, no identificadores individuales; por eso no permite contar streamers únicos a lo largo de los tres meses.
-•	Cobertura parcial del merge. Matchea cerca del 60% de los juegos de Twitch y el 49,6% de las horas vistas; varios juegos muy vistos no están en Steam o no se llaman igual en ambas fuentes.
+•	Cobertura parcial del merge. Matchea el 59,7% de los juegos de Twitch y el 51,6% de las horas vistas; la mayor parte de lo no cruzado son juegos que no están en Steam (League of Legends, Fortnite, Valorant, Minecraft, World of Warcraft) o juegos de consola/móvil.
+•	La fecha de Steam no siempre es el lanzamiento real. Los juegos que ya se veían más en Twitch antes de esa fecha que después se excluyen de P1; los que solo tuvieron betas o tráileres previos (Elden Ring, Cyberpunk 2077) se conservan. Con la regla anterior (excluir cualquier aparición más de un mes antes) la mediana de owners del cuartil más alto bajaba de 3,5 M a 1,5 M; el sentido de la relación no cambia.
+•	El género principal es una aproximación: se toma el tag más votado que figure entre los géneros oficiales del juego. Un juego tiene varios géneros, pero P2 lo asigna a uno solo.
 •	Solo dos plataformas. No incluye YouTube, consolas ni otras tiendas.
 
 
@@ -74,7 +76,7 @@ Este apartado es la base de todo el trabajo y de la defensa oral: el dashboard d
 Fuentes seleccionadas para este proyecto:
 •	Steam: archivo local `games.csv`, con 125.855 filas y 40 columnas antes de la limpieza. URL de origen: PENDIENTE de confirmar. Licencia: PENDIENTE de verificar en la fuente original. Fecha de descarga: PENDIENTE de confirmar.
 •	Twitch: archivo local `Twitch_game_data.csv`, con 21.000 filas y 12 columnas antes de la limpieza; ranking mensual top 200 entre enero de 2016 y septiembre de 2024. URL de origen: PENDIENTE de confirmar. Licencia: PENDIENTE de verificar en la fuente original. Fecha de descarga: PENDIENTE de confirmar.
-•	El cruce requiere trabajo real: se normaliza el nombre del juego y se aplican cinco alias manuales Twitch-Steam documentados en el ETL.
+•	El cruce requiere trabajo real: se normaliza el nombre del juego y se aplican 21 alias manuales Twitch-Steam documentados en el ETL.
 3.3 ETL con Python/pandas
 El proceso de ETL debe incluir:
 1.	Ingestión de cada fuente por separado.
@@ -85,9 +87,9 @@ El proceso de ETL debe incluir:
 
 Aplicación en este proyecto:
 •	Ingestión por separado con pandas desde los dos CSV. Steam asigna los 40 nombres esperados a las columnas; Twitch se lee con la codificación Windows-1252 observada en el archivo.
-•	Limpieza: se eliminan registros sin nombre, duplicados, demos, playtests, soundtracks y categorías de Twitch que no son juegos. Los owners se convierten desde su rango al punto medio; el precio de Steam se conserva en USD decimales y los valores mayores a 100 USD se marcan sin eliminarlos.
-•	Transformación y cruce: se normalizan los nombres, se aplican cinco alias manuales y se agregan duplicados juego-mes sumando horas vistas y conservando máximos para picos y conteos mensuales. El hecho mensual usa Twitch LEFT JOIN Steam para medir cobertura; el universo de juegos usa Steam LEFT JOIN las métricas agregadas para conservar juegos sin presencia observada.
-•	Validación y reproducibilidad: `ETL.PY` comprueba filas, nulos en todas las columnas de Twitch antes y después del merge, duplicados, conservación de horas y cobertura. Los resultados y las tablas procesadas se regeneran en `salida_etl/`; el reporte queda en `salida_etl/validaciones.txt`.
+•	Limpieza: se eliminan registros sin nombre, duplicados, demos, playtests, soundtracks y categorías de Twitch que no son juegos. Los owners se convierten desde su rango al punto medio; el género principal se elige por el tag más votado que figure en Genres (la lista Genres viene en orden alfabético y su primer elemento no sirve como género principal); el precio de Steam se conserva en USD decimales y los valores mayores a 100 USD se marcan sin eliminarlos.
+•	Transformación y cruce: se normalizan los nombres (los nombres no latinos reciben una clave propia por AppID para no perderse), se aplican 21 alias manuales y se agregan duplicados juego-mes sumando horas vistas y conservando máximos para picos y conteos mensuales. El hecho mensual usa Twitch LEFT JOIN Steam para medir cobertura; el universo de juegos usa Steam LEFT JOIN las métricas agregadas para conservar juegos sin presencia observada.
+•	Validación y reproducibilidad: el notebook `ETL_AE4.ipynb` comprueba filas antes y después de cada merge, nulos introducidos en ambos lados de cada join, duplicados, integridad referencial, conservación de horas y cobertura; cada paso de limpieza queda registrado en `salida_etl/trazabilidad_filas.csv`. Los resultados y las tablas procesadas se regeneran en `salida_etl/`; el reporte queda en `salida_etl/validaciones.txt`.
 3.4 Data Warehouse en PostgreSQL
 Se debe implementar un Data Warehouse con un mínimo de 4 tablas físicas:
 •	1 tabla de hechos, con al menos 2 claves foráneas hacia dimensiones y al menos 1 métrica aditiva.
