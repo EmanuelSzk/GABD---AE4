@@ -1,0 +1,37 @@
+etapa,metrica,valor
+ingesta_steam,filas,125855
+ingesta_twitch,filas,21000
+ingesta_twitch,meses distintos,105
+limpieza_steam,app_id duplicados eliminados,0
+limpieza_steam,sin nombre utilizable eliminados,5
+limpieza_steam,fechas no parseables eliminadas,0
+limpieza_steam,owners '0 - 0' excluidos,24578
+limpieza_steam,filas tras limpieza,101272
+limpieza_twitch,filas con juego nulo eliminadas,1
+limpieza_twitch,filas de categorías no-juego excluidas,1828
+limpieza_twitch,% de horas vistas que eran no-juego,19.6%
+limpieza_twitch,filas colapsadas por mismo nombre y mes,10
+limpieza_twitch,filas tras limpieza,19161
+limpieza_twitch,juegos distintos,2290
+periodo_steam,juegos en el período,71866
+periodo_steam,AppID descartados por nombre repetido,819
+periodo_steam,juegos finales para el análisis,71047
+cobertura,% juegos de Twitch encontrados en Steam,58.5%
+cobertura,% horas vistas de Twitch cubiertas,36.1%
+merge1,filas Twitch antes,19161
+merge1,filas tras inner join,7511
+merge1,juegos de Steam (período) con al menos un mes en el top 200,1081
+merge1,juegos con aparición en Twitch > 3 meses antes de Steam (sospecha),315
+metricas,juegos con presencia en la ventana de lanzamiento,851
+merge2,filas antes,71047
+merge2,filas después,71047
+validacion,Merge 2 no cambia la cantidad de juegos,OK
+validacion,app_id único en la tabla final,OK
+validacion,Sin nulos en métricas de Twitch tras imputar,OK
+validacion,Sin nulos en owners_estimados,OK
+validacion,Horas de lanzamiento <= horas totales,OK
+validacion,Horas de la ventana coinciden con el merge 1,OK
+validacion,Horas totales coinciden con el merge 1,OK
+validacion,Todo juego con horas de lanzamiento está en_top200,OK
+validacion,Fechas dentro del período,OK
+validacion,Sin owners '0 - 0',OK
